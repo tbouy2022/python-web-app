@@ -8,12 +8,12 @@ resource "aws_security_group" "allow_tls" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ipv4" {
   security_group_id = aws_security_group.allow_tls.id
-  cidr_ipv4         = aws_vpc.main.cidr_block
-  from_port         = 443
+  cidr_ipv4         = "0.0.0.0/0"  # Or restrict to your IP for security
+  from_port         = 22
+  to_port           = 22
   ip_protocol       = "tcp"
-  to_port           = 443
 }
 
 
