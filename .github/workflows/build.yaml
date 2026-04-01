@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3  # updated to latest
+        uses: actions/checkout@v3
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3  # updated to latest
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -62,15 +62,17 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
           echo "EC2_PUBLIC_IP=$EC2_IP" >> "$GITHUB_ENV"
+          echo "::set-output name=ec2_ip::$EC2_IP"
           echo "EC2 Public IP: $EC2_IP"
 
       - name: SSH & Deploy Docker Container
-        uses: appleboy/ssh-action@v0.1.6  # upgraded version, Node 24 compatible
+        uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ env.EC2_PUBLIC_IP }}
+          host: ${{ steps.get_ip.outputs.ec2_ip }}
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
+          debug: true
           script: |
             echo "Cleaning up existing containers"
             docker rm -f $(docker ps -aq) || true
