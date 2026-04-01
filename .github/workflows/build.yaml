@@ -44,9 +44,6 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -62,22 +59,20 @@ jobs:
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
           echo "EC2_PUBLIC_IP=$EC2_IP" >> "$GITHUB_ENV"
-          echo "::set-output name=ec2_ip::$EC2_IP"
           echo "EC2 Public IP: $EC2_IP"
 
       - name: SSH & Deploy Docker Container
         uses: appleboy/ssh-action@v0.1.10
-        with:    host: ${{ secrets.EC2_PUBLIC_IP }}
-
-          host: ${{ secrets.EC2_PUBLIC_IP }}
+        with:
+          host: ${{ env.EC2_PUBLIC_IP }}
           username: ubuntu
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.SSH_KEY }}      # Must be your private key from Terraform
           port: 22
           debug: true
           script: |
-            echo "Cleaning up existing containers"
-            docker rm -f $(docker ps -aq) || true
-            docker rmi -f $(docker images -q) || true
+            echo "Cleaning up existing containers/images for flask-app only"
+            docker rm -f flask-app || true
+            docker rmi -f ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:${{ env.GIT_SHA }} || true
 
             echo "Logging into ECR"
             aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login \
