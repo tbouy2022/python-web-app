@@ -24,7 +24,7 @@ resource "aws_instance" "flask-app" {
   iam_instance_profile = aws_iam_instance_profile.ec2-profile.name
   key_name = aws_key_pair.deployer.key_name
 
-####
+
 
   
   #user data srcipt to configure docker
