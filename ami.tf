@@ -25,7 +25,7 @@ resource "aws_instance" "flask-app" {
   key_name = aws_key_pair.deployer.key_name
 
 
-  
+  ###222
   
   #user data srcipt to configure docker
 user_data = <<-EOF
