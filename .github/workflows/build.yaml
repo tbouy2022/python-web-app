@@ -2,12 +2,11 @@ name: Build and Deploy Docker Image to ECR
 
 on:
   push:
-    paths:
-      - 'Src/*'  # Trigger only when Python files change inside the src folder
-      - 'Dockerfile' 
     branches:
-      - main
-  workflow_dispatch:
+      - master
+      - patch-11
+  pull_request:
+
 env:
   AWS_REGION: "eu-west-2"
   AWS_EC2: "flask-app"
