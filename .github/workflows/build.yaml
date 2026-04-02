@@ -11,11 +11,12 @@ env:
   AWS_REGION: "eu-west-2"
   AWS_EC2: "flask-app"
   ECR_REPO: "docker-flask"
-  GIT_SHA: ${{ github.sha }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      image_uri: ${{ steps.set_image_uri.outputs.image_uri }}
 
     steps:
       - name: Checkout Repository
@@ -35,11 +36,13 @@ jobs:
             --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
       - name: Build and Push Docker Image
+        id: set_image_uri
         run: |
-          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:${{ env.GIT_SHA }}
+          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:${GITHUB_SHA}
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          echo "::set-output name=image_uri::$IMAGE_URI"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
   deploy:
     runs-on: ubuntu-latest
@@ -75,7 +78,7 @@ jobs:
           port: 22
           debug: true
           script: |
-            IMAGE_URI=${{ env.IMAGE_URI }}
+            IMAGE_URI=${{ needs.build.outputs.image_uri }}
 
             # Stop and remove old container
             docker rm -f flask-app || true
