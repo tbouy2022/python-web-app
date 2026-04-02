@@ -42,7 +42,6 @@ jobs:
           echo "Building Docker image $IMAGE_URI"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
           echo "::set-output name=image_uri::$IMAGE_URI"
 
   deploy:
@@ -67,13 +66,12 @@ jobs:
             --filters "Name=tag:Name,Values=${{ env.AWS_EC2 }}" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
-          echo "EC2_PUBLIC_IP=$EC2_IP" >> "$GITHUB_ENV"
-          echo "EC2 Public IP: $EC2_IP"
+          echo "::set-output name=ec2_ip::$EC2_IP"
 
       - name: SSH & Deploy Docker Container
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ env.EC2_PUBLIC_IP }}
+          host: ${{ steps.get_ip.outputs.ec2_ip }}
           username: ubuntu
           key: ${{ secrets.SSH_KEY }}
           port: 22
