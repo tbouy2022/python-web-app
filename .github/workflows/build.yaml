@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      image_uri: ${{ steps.set_image_uri.outputs.image_uri }}
+      image_uri: ${{ steps.build_image.outputs.image_uri }}
 
     steps:
       - name: Checkout Repository
@@ -36,13 +36,14 @@ jobs:
             --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
       - name: Build and Push Docker Image
-        id: set_image_uri
+        id: build_image
         run: |
           IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:${GITHUB_SHA}
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
-          echo "::set-output name=image_uri::$IMAGE_URI"
+          echo "Building Docker image $IMAGE_URI"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          echo "::set-output name=image_uri::$IMAGE_URI"
 
   deploy:
     runs-on: ubuntu-latest
