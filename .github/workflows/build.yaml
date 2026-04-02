@@ -42,7 +42,7 @@ jobs:
           echo "Building Docker image $IMAGE_URI"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
-          echo "::set-output name=image_uri::$IMAGE_URI"
+          echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
 
   deploy:
     runs-on: ubuntu-latest
@@ -66,7 +66,8 @@ jobs:
             --filters "Name=tag:Name,Values=${{ env.AWS_EC2 }}" \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
             --output text)
-          echo "::set-output name=ec2_ip::$EC2_IP"
+          echo "ec2_ip=$EC2_IP" >> $GITHUB_OUTPUT
+          echo "EC2 Public IP: $EC2_IP"
 
       - name: SSH & Deploy Docker Container
         uses: appleboy/ssh-action@v0.1.10
@@ -79,9 +80,10 @@ jobs:
           script: |
             IMAGE_URI=${{ needs.build.outputs.image_uri }}
 
-            # Stop existing container if running
-            EXISTING_CONTAINER=$(docker ps -q -f "name=flask-app")
-            if [ -n "$EXISTING_CONTAINER" ]; then
+            echo "Deploying Docker image $IMAGE_URI to EC2"
+
+            # Stop and remove old container if it exists
+            if docker ps -q -f "name=flask-app" >/dev/null; then
               echo "Stopping existing container..."
               docker rm -f flask-app
             fi
