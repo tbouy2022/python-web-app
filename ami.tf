@@ -31,13 +31,15 @@ resource "aws_instance" "flask-app" {
 user_data = <<-EOF
             #!/bin/bash
             apt update -y
-            apt install docker.io -y
+            apt install -y docker.io unzip curl
             systemctl start docker
             systemctl enable docker
-            usermod -aG docker ubuntu
-            EOF
-
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            ./aws/install
+             
 tags = {
     Name = "flask-app"
   }
 }
+
