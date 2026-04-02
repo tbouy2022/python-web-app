@@ -42,6 +42,8 @@ jobs:
           echo "Building Docker image: $IMAGE_URI"
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI
+
+          # **Correct way to export step output for GitHub Actions now**
           echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
 
   deploy:
@@ -80,6 +82,11 @@ jobs:
           script: |
             IMAGE_URI=${{ needs.build.outputs.image_uri }}
             echo "Deploying Docker image: $IMAGE_URI"
+
+            if [ -z "$IMAGE_URI" ]; then
+              echo "ERROR: IMAGE_URI is empty. Exiting."
+              exit 1
+            fi
 
             # Stop existing container if it exists
             if docker ps -q -f "name=flask-app" >/dev/null; then
