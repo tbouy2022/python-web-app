@@ -27,7 +27,7 @@ resource "aws_instance" "flask-app" {
 #### 
 
   
-  #user data srcipt to configure docker
+ #user data srcipt to configure docker
 user_data = <<-EOF
             #!/bin/bash
             apt update -y
@@ -37,9 +37,8 @@ user_data = <<-EOF
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             ./aws/install
-             
-tags = {
+EOF    
+   tags = {
     Name = "flask-app"
-  }
+   }  
 }
-

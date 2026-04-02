@@ -39,7 +39,7 @@ resource "aws_route_table" "public-rt" {
     gateway_id = aws_internet_gateway.gw.id
   }
 
-  
+  #kk
 
   tags = {
     Name = "public-rt"
